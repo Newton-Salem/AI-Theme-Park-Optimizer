@@ -1,14 +1,14 @@
-#Mohamed:
+# Mohamed:
 Problem Modeling and Environment Implementation.
 
-#Jana:
+# Jana:
 BFS and DFS Implementation.
 
-#Habiba:
+# Habiba:
 UCS and IDS Implementation.
 
-#:
+# :
 Visualization and Performance Graphs.
 
-#:
+# :
 Integration, Testing, and Documentation.
