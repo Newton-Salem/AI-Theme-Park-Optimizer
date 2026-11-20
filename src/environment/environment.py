@@ -4,7 +4,7 @@ import math
 # Basic settings
 TIME_UNIT_MINUTES = 15
 TIME_LIMIT_MINUTES = 180
-TIME_LIMIT_UNITS = TIME_LIMIT_MINUTES // TIME_UNIT_MINUTES
+TIME_LIMIT_UNITS = TIME_LIMIT_MINUTES // TIME_UNIT_MINUTES #12
 
 LOCATIONS = [
     "Entrance",
@@ -22,15 +22,16 @@ LOCATIONS = [
 
 # Required attractions and their bit positions
 REQUIRED_ATTRACTIONS = {
-    "RollerCoaster": 0,
-    "FerrisWheel": 1,
-    "BumperCars": 2,
-    "HauntedHouse": 3,
-    "WaterRide": 4
+    "RollerCoaster": 0,  #1
+    "FerrisWheel": 1,    #2
+    "BumperCars": 2,     #4
+    "HauntedHouse": 3,   #8
+    "WaterRide": 4       #16  
+
+    # Total: 31 in decimal, 11111 in binary, which is 2^5 - 1  (meaning all 5 attractions visited)
 }
 
-FULL_VISITED_MASK = (1 << len(REQUIRED_ATTRACTIONS)) - 1
-
+FULL_VISITED_MASK = (1 << len(REQUIRED_ATTRACTIONS)) - 1 
 
 # Attraction times in minutes
 QUEUE_TIMES = {
