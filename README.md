@@ -173,9 +173,9 @@ The project is developed collaboratively, with responsibilities divided among te
 
 | Team Member | Responsibility |
 |---|---|
-| Person 1 | Problem Modeling and Environment Implementation |
-| Person 2 | BFS and DFS Implementation |
-| Person 3 | UCS and IDS Implementation |
+| Mohamed | Problem Modeling and Environment Implementation |
+| Jana | BFS and DFS Implementation |
+| Habiba | UCS and IDS Implementation |
 | Person 4 | Visualization and Performance Graphs |
 | Person 5 | Integration, Testing, and Documentation |
 
