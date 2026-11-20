@@ -26,8 +26,6 @@ The system will implement and compare the following algorithms:
 
 The primary optimization objective is to minimize the total estimated time required to visit all required attractions and reach the park exit without exceeding the visitor's time budget.
 
-The same problem representation will also support the informed and local search algorithms planned for Phase II.
-
 ---
 
 # 2. Problem Description
@@ -93,7 +91,6 @@ The visitor must visit all five required attractions before reaching the Exit.
 
 The optional locations can be used as intermediate locations when moving through the park. Visiting them is not required to satisfy the goal condition.
 
-For Phase I, optional locations do not have additional service or waiting costs.
 
 ## 3.2 Park Representation as a Graph
 
@@ -165,7 +162,7 @@ All travel times are positive.
 
 The graph is connected, meaning that every location can be reached from every other location through one or more valid connections.
 
-**Important:** The graph is not fully connected. A visitor can only move directly between locations that share an edge.
+The graph is not fully connected. A visitor can only move directly between locations that share an edge.
 
 ---
 
@@ -277,7 +274,7 @@ The mask is updated using the bitwise OR operator.
 For example:
 
 \[
-M_{new} = M_{old} \;|\; AttractionBit
+M_{new} = M_{old} | AttractionBit
 \]
 
 If the visitor has visited RollerCoaster and BumperCars:
@@ -307,19 +304,19 @@ The visitor has a maximum time budget of 180 minutes.
 To keep the state space finite and manageable, time is discretized into 15-minute units.
 
 \[
-TimeUnit = 15 \text{ minutes}
+TimeUnit = 15 {minutes}
 \]
 
 The time representation is:
 
 \[
-T = \frac{ElapsedTime}{15}
+T = {ElapsedTime}/{15}
 \]
 
 The possible time values are:
 
 \[
-T \in \{0,1,2,\ldots,12\}
+T \{0,1,2,....,12\}
 \]
 
 Each time unit represents 15 minutes.
@@ -345,7 +342,7 @@ For example:
 The estimated elapsed time is calculated as:
 
 \[
-ElapsedTime = T \times 15
+ElapsedTime = T X 15
 \]
 
 ### Example State
@@ -442,13 +439,13 @@ VisitedMask = 31
 \]
 
 \[
-ElapsedTime \leq 180
+ElapsedTime = 180
 \]
 
 Using time units:
 
 \[
-T \leq 12
+T = 12
 \]
 
 The goal test can be expressed mathematically as:
@@ -456,10 +453,10 @@ The goal test can be expressed mathematically as:
 \[
 Goal(S) =
 (Location = Exit)
-\land
+&
 (VisitedMask = 31)
-\land
-(T \leq 12)
+&
+(T <= 12)
 \]
 
 ### Python Representation
@@ -502,7 +499,7 @@ Move(Entrance,RollerCoaster)
 The travel cost is:
 
 \[
-Cost = 5 \text{ minutes}
+Cost = 5 { minutes}
 \]
 
 A Move action:
@@ -532,13 +529,13 @@ Cost = QueueTime + RideDuration
 For RollerCoaster:
 
 \[
-Cost = 15 + 5 = 20 \text{ minutes}
+Cost = 15 + 5 = 20 {minutes}
 \]
 
 A Visit action:
 
 1. Keeps the visitor at the same location.
-2. Adds the attraction's service time to the elapsed time.
+2. Adds the attraction's service time(cost) to the elapsed time.
 3. Updates the visited-attractions mask.
 
 The attraction cannot be visited again once its corresponding bit has been set.
@@ -602,7 +599,7 @@ The new time cost in discretized units is:
 
 \[
 CostUnits =
-\left\lceil \frac{d}{15} \right\rceil
+{d}/{15}
 \]
 
 The resulting state is:
@@ -628,7 +625,7 @@ The travel time is 5 minutes.
 Therefore:
 
 \[
-CostUnits = \left\lceil \frac{5}{15} \right\rceil = 1
+CostUnits = {5}/{15} = 1
 \]
 
 The resulting state is:
@@ -653,7 +650,7 @@ The time cost in units is:
 
 \[
 CostUnits =
-\left\lceil \frac{ServiceTime(A)}{15} \right\rceil
+{ServiceTime(A)}/{15}
 \]
 
 The attraction's bit value is represented by:
@@ -665,7 +662,7 @@ Bit(A)
 The new visited mask is:
 
 \[
-M' = M \;|\; Bit(A)
+M' = M|Bit(A)
 \]
 
 The resulting state is:
@@ -689,13 +686,13 @@ S = (RollerCoaster,0,1)
 The service time is:
 
 \[
-15+5=20 \text{ minutes}
+15+5=20 {minutes}
 \]
 
 Therefore:
 
 \[
-CostUnits = \left\lceil \frac{20}{15} \right\rceil = 2
+CostUnits = {20}/{15} = 2
 \]
 
 The RollerCoaster bit value is:
@@ -723,7 +720,7 @@ The estimated elapsed time is now 45 minutes.
 A transition is valid only if:
 
 \[
-T' \leq 12
+T'<= 12
 \]
 
 Any successor state that exceeds the maximum time budget is discarded.
@@ -740,7 +737,7 @@ The rounding formula is:
 
 \[
 RoundedCost(d)=
-\left\lceil \frac{d}{15} \right\rceil
+up ceil {d}/{15}
 \]
 
 For example:
@@ -773,18 +770,14 @@ There are two possible types of action costs:
 
 \[
 C_{move}(L,L') =
-\left\lceil
-\frac{TravelTime(L,L')}{15}
-\right\rceil
+round up {TravelTime(L,L')}/{15}
 \]
 
 ### Attraction Visit Cost
 
 \[
 C_{visit}(A) =
-\left\lceil
-\frac{QueueTime(A)+RideDuration(A)}{15}
-\right\rceil
+round up {QueueTime(A)+RideDuration(A)}/{15}
 \]
 
 The path cost is the sum of the costs of all actions performed along the path.
@@ -816,7 +809,7 @@ The optimization objective is:
 Subject to:
 
 \[
-TotalTime \leq 180
+TotalTime <= 180
 \]
 
 The search problem therefore aims to find a valid goal state with the minimum discretized total time.
@@ -864,7 +857,7 @@ The time unit is 15 minutes.
 Therefore:
 
 \[
-|T|=\frac{180}{15}+1=13
+|T|={180}/{15}+1=13
 \]
 
 The additional 1 accounts for the initial time value of zero.
@@ -872,7 +865,7 @@ The additional 1 accounts for the initial time value of zero.
 The possible values are:
 
 \[
-T=\{0,1,2,\ldots,12\}
+T=\{0,1,2,.....,12\}
 \]
 
 ## 12.4 Total Theoretical State Space
@@ -880,19 +873,19 @@ T=\{0,1,2,\ldots,12\}
 The maximum theoretical state space size is:
 
 \[
-|S|=|L|\times|M|\times|T|
+|S|=|L| X |M| X |T|
 \]
 
 Substituting:
 
 \[
-|S|=10\times32\times13
+|S|=10 X 32 X 13
 \]
 
 Therefore:
 
 \[
-\boxed{|S|=4160}
+{|S|=4160}
 \]
 
 The theoretical state space contains **4,160 possible state combinations**.
@@ -912,7 +905,7 @@ Some combinations may be unreachable because:
 
 The actual number of reachable states should be calculated programmatically by exploring the environment from the initial state while respecting all valid transitions and the time limit.
 
-The theoretical state space size and the actual reachable state count should be reported separately.
+The theoretical state space size and the actual reachable state count will be reported separately.
 
 ---
 
@@ -963,7 +956,7 @@ The following assumptions define the environment and ensure consistent behavior 
 9. Visiting an attraction includes both its queue time and ride duration.
 10. Queue times and ride durations remain constant.
 11. Optional locations are not required for a successful trip.
-12. Optional locations do not add service time in Phase I.
+12. Optional locations do not add service time in at the moment (phase 1) but we may add in phase 2.
 
 ## 14.3 Time Assumptions
 
@@ -984,7 +977,7 @@ The following assumptions define the environment and ensure consistent behavior 
 
 ## 14.5 Scope Limitations
 
-The Phase I environment does not consider:
+This phase (phase 1) environment does not consider:
 
 - Random or changing queue times.
 - Ride breakdowns.
@@ -1031,7 +1024,7 @@ A solution is a sequence of states and actions that starts at the initial state 
 A solution path can be represented as:
 
 \[
-P=(S_0,A_1,S_1,A_2,\ldots,A_k,S_k)
+P=(S_0,A_1,S_1,A_2,......,A_k,S_k)
 \]
 
 Where:
@@ -1079,7 +1072,7 @@ This distinction is important because moving to an attraction and visiting it ar
 
 # 17. Relationship to Uninformed Search Algorithms
 
-The environment is designed to support the four uninformed search algorithms required in Phase I.
+The environment is designed to support the four uninformed search algorithms required in thi phase (Phase 1).
 
 All algorithms will receive:
 
@@ -1163,7 +1156,7 @@ Running time must be measured using actual program execution rather than manuall
 
 The current model is intentionally deterministic and uses fixed costs to make the problem suitable for comparing uninformed search algorithms.
 
-The same state representation can be extended in Phase II.
+The same state representation may be extended in Phase 2.
 
 Potential extensions include:
 
