@@ -1190,7 +1190,3 @@ All action costs are positive and are measured using a consistent 15-minute disc
 The theoretical state space contains 4,160 possible state combinations, which satisfies the required state-space size range.
 
 This formulation provides a consistent foundation for implementing and comparing BFS, DFS, UCS, and IDS in Phase I, while also supporting the informed and local search algorithms planned for Phase II.
-
----
-
-**End of Problem Model**
