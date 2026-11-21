@@ -176,7 +176,7 @@ The project is developed collaboratively, with responsibilities divided among te
 | Mohamed | Problem Modeling and Environment Implementation |
 | Jana | BFS and DFS Implementation |
 | Habiba | UCS and IDS Implementation |
-| Person 4 | Visualization and Performance Graphs |
+| Ahmed | Visualization and Performance Graphs |
 | Person 5 | Integration, Testing, and Documentation |
 
 ## 🔮 Future Development
