@@ -1,12 +1,10 @@
 
-import time
 from collections import deque
-from src.environment.environment import INITIAL_STATE, is_goal, get_successors
-
+import time
+from environment.environment import INITIAL_STATE, is_goal, get_successors
 
 def bfs():
     start_time = time.perf_counter()
-
     queue = deque([INITIAL_STATE])
     visited = {INITIAL_STATE}
     parent = {INITIAL_STATE: None}
@@ -17,7 +15,6 @@ def bfs():
 
     while queue:
         current_state = queue.popleft()
-
         if is_goal(current_state):
             path = []
             actions = []
@@ -32,13 +29,13 @@ def bfs():
                     break
 
                 previous_state, action, step_cost = parent_info
+
                 actions.append(action)
                 path_cost += step_cost
                 state = previous_state
 
             path.reverse()
             actions.reverse()
-
             execution_time = time.perf_counter() - start_time
 
             return {
@@ -54,10 +51,10 @@ def bfs():
             }
 
         nodes_expanded += 1
-
         for next_state, action, step_cost in get_successors(current_state):
             if next_state not in visited:
                 visited.add(next_state)
+
                 parent[next_state] = (
                     current_state,
                     action,
@@ -67,7 +64,6 @@ def bfs():
                 nodes_generated += 1
 
         max_frontier_size = max(max_frontier_size, len(queue))
-
     execution_time = time.perf_counter() - start_time
 
     return {
