@@ -1,7 +1,7 @@
 
 import time
 
-from src.environment.environment import INITIAL_STATE, is_goal, get_successors
+from src.environment import INITIAL_STATE, is_goal, get_successors
 
 
 def dfs():

@@ -38,7 +38,7 @@ COLORS = {
 
 METRICS = {
     "path_cost": "Path Cost (time units)",
-    "trip_time": "Trip Time (minutes)",
+    "estimated_trip_time_minutes": "Trip Time (minutes)",
     "nodes_generated": "Nodes Generated",
     "nodes_expanded": "Nodes Expanded",
     "max_frontier_size": "Maximum Frontier Size",

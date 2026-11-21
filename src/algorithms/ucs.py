@@ -1,11 +1,7 @@
 import heapq
 import itertools
 import time
-
-try:
-    from src.environment.environment import INITIAL_STATE, get_successors, is_goal
-except ModuleNotFoundError:
-    from park_model import INITIAL_STATE, get_successors, is_goal
+from src.environment import INITIAL_STATE, is_goal, get_successors
 
 
 def ucs(initial_state=INITIAL_STATE):

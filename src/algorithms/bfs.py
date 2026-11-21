@@ -1,7 +1,7 @@
 
 from collections import deque
 import time
-from environment.environment import INITIAL_STATE, is_goal, get_successors
+from src.environment import INITIAL_STATE, is_goal, get_successors
 
 def bfs():
     start_time = time.perf_counter()
