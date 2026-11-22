@@ -1,192 +1,239 @@
 
-import csv
-from pathlib import Path
+"""Connect BFS, DFS, UCS and IDS to visualization."""
 
 from src.environment.environment import (
     INITIAL_STATE,
     get_successors,
     get_state_time_minutes,
-    is_goal
+    is_goal,
+    TIME_UNIT_MINUTES
 )
 
 from src.visualization.visualization import (
     draw_park_map,
     draw_detailed_path,
     draw_action_timeline,
-    draw_performance_comparison
+    draw_performance_comparison,
+    save_results_table
 )
 
 
-ALGORITHMS = ["BFS", "DFS", "UCS", "IDS"]
+ALGORITHMS = ("BFS", "DFS", "UCS", "IDS")
 
-METRIC_KEYS = [
-    "path_cost",
-    "trip_time",
+METRIC_KEYS = (
     "nodes_generated",
     "nodes_expanded",
     "max_frontier_size",
     "execution_time"
-]
+)
 
 
 def validate_path(path):
+    """Validate a path and calculate its total cost."""
+
     if not isinstance(path, (list, tuple)) or not path:
-        return False, "Path is empty", 0
+        return False, "Empty path", 0
 
     try:
         states = [tuple(state) for state in path]
     except (TypeError, ValueError):
         return False, "Invalid state format", 0
 
+    if any(len(state) != 3 for state in states):
+        return False, "Each state must have three elements", 0
+
     if states[0] != INITIAL_STATE:
-        return False, "Path must start at Entrance", 0
+        return False, "Path does not start at Entrance", 0
 
     total_cost = 0
 
-    for i in range(1, len(states)):
-        current = states[i - 1]
-        next_state = states[i]
-
-        transitions = get_successors(current)
-
+    for step, (previous, nxt) in enumerate(
+        zip(states, states[1:]), start=1
+    ):
         matching = [
             cost
-            for successor, action, cost in transitions
-            if successor == next_state
+            for state, action, cost in get_successors(previous)
+            if state == nxt
         ]
 
         if not matching:
-            return False, f"Invalid transition at step {i}", 0
+            return (
+                False,
+                f"Invalid transition at step {step}",
+                0
+            )
 
         total_cost += matching[0]
 
-    return True, "Valid transitions", total_cost
+    return True, "All transitions are valid", total_cost
 
 
 def prepare_result(name, raw_result):
-    if raw_result is None:
-        raw_result = {}
+    """Normalize results from the team's algorithms."""
+
+    name = name.upper()
 
     if not isinstance(raw_result, dict):
         raise ValueError(
-            f"{name}: Result must be a dictionary"
+            f"{name}: Expected a dictionary result"
         )
 
-    path = raw_result.get("path") or []
+    declared_name = raw_result.get("algorithm")
 
-    if path:
+    if declared_name:
+        if str(declared_name).upper() != name:
+            raise ValueError(
+                f"{name}: Algorithm name mismatch"
+            )
+
+    path = raw_result.get("path")
+
+    if path is None or path == []:
+        if raw_result.get("actions") not in (None, []):
+            raise ValueError(
+                f"{name}: Actions supplied without a path"
+            )
+
+        if raw_result.get("path_cost") is not None:
+            raise ValueError(
+                f"{name}: Cost supplied without a path"
+            )
+
+        states = []
+        status = "NO_SOLUTION"
+        cost = None
+        minutes = None
+        actions = []
+
+    else:
         valid, message, cost = validate_path(path)
 
         if not valid:
             raise ValueError(f"{name}: {message}")
 
         states = [tuple(state) for state in path]
-        goal_reached = is_goal(states[-1])
+        actions = []
 
-        path_cost = cost
-        trip_time = get_state_time_minutes(states[-1])
+        for previous, nxt in zip(
+            states, states[1:]
+        ):
+            matches = [
+                action
+                for state, action, step_cost
+                in get_successors(previous)
+                if state == nxt
+            ]
 
-    else:
-        states = []
-        goal_reached = False
-        path_cost = None
-        trip_time = None
+            actions.append(matches[0])
 
-    if goal_reached:
-        status = "SUCCESS"
-    elif states:
-        status = "INCOMPLETE"
-    else:
-        status = "NO_SOLUTION"
+        provided_actions = raw_result.get("actions")
 
-    result = {
+        if provided_actions is not None:
+            if list(provided_actions) != actions:
+                raise ValueError(
+                    f"{name}: Actions do not match path"
+                )
+
+        provided_cost = raw_result.get("path_cost")
+
+        if provided_cost is not None:
+            if provided_cost != cost:
+                raise ValueError(
+                    f"{name}: Incorrect path cost"
+                )
+
+        minutes = get_state_time_minutes(
+            states[-1]
+        )
+
+        provided_minutes = raw_result.get(
+            "estimated_trip_time_minutes"
+        )
+
+        if provided_minutes is not None:
+            if provided_minutes != minutes:
+                raise ValueError(
+                    f"{name}: Incorrect trip time"
+                )
+
+        status = (
+            "SUCCESS"
+            if is_goal(states[-1])
+            else "INCOMPLETE"
+        )
+
+    normalized = {
         "algorithm": name,
         "status": status,
         "path": states,
-        "path_cost": path_cost,
-        "trip_time": trip_time,
-        "nodes_generated": raw_result.get("nodes_generated"),
-        "nodes_expanded": raw_result.get("nodes_expanded"),
-        "max_frontier_size": raw_result.get("max_frontier_size"),
-        "execution_time": raw_result.get("execution_time")
+        "actions": actions,
+        "path_cost": cost,
+        "estimated_trip_time_minutes": minutes
     }
 
-    return result
+    for key in METRIC_KEYS:
+        value = raw_result.get(key)
+
+        if value is not None:
+            if (
+                not isinstance(value, (int, float))
+                or value < 0
+            ):
+                raise ValueError(
+                    f"{name}: Invalid metric {key}"
+                )
+
+        normalized[key] = value
+
+    if "depth_limit" in raw_result:
+        normalized["depth_limit"] = (
+            raw_result["depth_limit"]
+        )
+
+    return normalized
 
 
 def save_comparison_table(results):
-    output_dir = Path("results/tables")
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    filename = output_dir / "algorithm_comparison.csv"
-
-    fields = [
-        "algorithm",
-        "status"
-    ] + METRIC_KEYS
-
-    with open(
-        filename,
-        "w",
-        newline="",
-        encoding="utf-8"
-    ) as file:
-
-        writer = csv.DictWriter(
-            file,
-            fieldnames=fields
-        )
-
-        writer.writeheader()
-
-        for name, result in results.items():
-            row = {
-                key: result.get(key)
-                for key in fields
-            }
-
-            writer.writerow(row)
-
-    print("Saved:", filename)
+    return save_results_table(results)
 
 
 def process_algorithm_results(
     algorithm_results,
-    show=False
+    show=False,
+    draw_map=True
 ):
     if not isinstance(algorithm_results, dict):
         raise ValueError(
             "Algorithm results must be a dictionary"
         )
 
-    processed = {}
-    successful = {}
+    if draw_map:
+        draw_park_map(show=show)
 
-    print("\nALGORITHM INTEGRATION")
-    print("---------------------")
+    processed = {}
+
+    print("\nALGORITHM RESULTS")
+    print("-" * 55)
 
     for name in ALGORITHMS:
-        if name not in algorithm_results:
-            print(f"{name}: Not available")
+        raw = algorithm_results.get(name)
+
+        if raw is None:
+            print(f"{name}: NOT PROVIDED")
             continue
 
-        raw_result = algorithm_results[name]
-
-        result = prepare_result(
-            name,
-            raw_result
-        )
-
+        result = prepare_result(name, raw)
         processed[name] = result
 
-        print(f"\n{name}")
-        print("Status:", result["status"])
-        print("Path cost:", result["path_cost"])
-        print("Trip time:", result["trip_time"])
+        print(
+            f"{name}: {result['status']} | "
+            f"Cost={result['path_cost']} | "
+            f"Time={result['estimated_trip_time_minutes']} | "
+            f"Expanded={result['nodes_expanded']} | "
+            f"Runtime={result['execution_time']}"
+        )
 
-        if result["status"] == "SUCCESS":
-            successful[name] = result
-
+        if result["path"]:
             draw_detailed_path(
                 result["path"],
                 algorithm=name,
@@ -199,28 +246,39 @@ def process_algorithm_results(
                 show=show
             )
 
-    save_comparison_table(processed)
+    if processed:
+        save_comparison_table(processed)
 
-    if successful:
         draw_performance_comparison(
-            successful,
+            processed,
             show=show
         )
-
-        print("\nPerformance graphs generated.")
-    else:
-        print("\nNo successful solutions to compare.")
 
     return processed
 
 
 def generate_environment_map():
     draw_park_map(show=False)
-    print("Environment map generated.")
+
+
+def run_all_algorithms(show=False):
+    from src.algorithms.bfs import bfs
+    from src.algorithms.dfs import dfs
+    from src.algorithms.ucs import ucs
+    from src.algorithms.ids import ids
+
+    raw_results = {
+        "BFS": bfs(),
+        "DFS": dfs(),
+        "UCS": ucs(),
+        "IDS": ids()
+    }
+
+    return process_algorithm_results(
+        raw_results,
+        show=show
+    )
 
 
 if __name__ == "__main__":
-    generate_environment_map()
-
-    print("\nIntegration module ready.")
-    print("Waiting for algorithm results.")
+    run_all_algorithms(show=False)
