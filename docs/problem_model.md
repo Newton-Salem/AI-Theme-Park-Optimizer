@@ -30,7 +30,7 @@ The primary optimization objective is to minimize the total estimated time requi
 
 # 2. Problem Description
 
-Consider a visitor entering a theme park with a maximum available time of **180 minutes (3 hours)**.
+Consider a visitor entering a theme park with a maximum available time of **210 minutes**.
 
 The park contains ten locations, including:
 
@@ -338,6 +338,8 @@ For example:
 | 10 | 150 min |
 | 11 | 165 min |
 | 12 | 180 min |
+| 13 | 195 min |
+| 14 | 210 min |
 
 The estimated elapsed time is calculated as:
 
@@ -426,7 +428,7 @@ A state is considered a goal if and only if all the following conditions are sat
 
 1. The visitor has visited all five required attractions.
 2. The visitor is currently at the Exit.
-3. The elapsed time does not exceed 180 minutes.
+3. The elapsed time does not exceed 210 minutes.
 
 The goal conditions are:
 
@@ -439,13 +441,13 @@ VisitedMask = 31
 \]
 
 \[
-ElapsedTime = 180
+ElapsedTime = 210
 \]
 
 Using time units:
 
 \[
-T = 12
+T = 14
 \]
 
 The goal test can be expressed mathematically as:
@@ -456,7 +458,7 @@ Goal(S) =
 &
 (VisitedMask = 31)
 &
-(T <= 12)
+(T <= 14)
 \]
 
 ### Python Representation
@@ -468,7 +470,7 @@ def is_goal(state):
     return (
         location == "Exit"
         and visited_mask == 31
-        and time_units <= 12
+        and time_units <= 14
     )
 ```
 
@@ -720,7 +722,7 @@ The estimated elapsed time is now 45 minutes.
 A transition is valid only if:
 
 \[
-T'<= 12
+T'<= 14
 \]
 
 Any successor state that exceeds the maximum time budget is discarded.
@@ -809,7 +811,7 @@ The optimization objective is:
 Subject to:
 
 \[
-TotalTime <= 180
+TotalTime <= 210
 \]
 
 The search problem therefore aims to find a valid goal state with the minimum discretized total time.
@@ -850,14 +852,14 @@ Therefore:
 
 ## 12.3 Number of Time Values
 
-The maximum time budget is 180 minutes.
+The maximum time budget is 210 minutes.
 
 The time unit is 15 minutes.
 
 Therefore:
 
 \[
-|T|={180}/{15}+1=13
+|T|={210}/{15}+1=14
 \]
 
 The additional 1 accounts for the initial time value of zero.
@@ -960,7 +962,7 @@ The following assumptions define the environment and ensure consistent behavior 
 
 ## 14.3 Time Assumptions
 
-13. The maximum available trip time is 180 minutes.
+13. The maximum available trip time is 210 minutes.
 14. Time is discretized into 15-minute units.
 15. Each action duration is rounded upward to the next 15-minute unit.
 16. The visitor cannot exceed the maximum time budget.
@@ -1181,7 +1183,7 @@ Each state represents the visitor's current location, visited required attractio
 
 The initial state places the visitor at the Entrance with no attractions visited and zero elapsed time.
 
-The goal state requires the visitor to visit all five required attractions and reach the Exit without exceeding 180 minutes.
+The goal state requires the visitor to visit all five required attractions and reach the Exit without exceeding 210 minutes.
 
 The environment provides two main actions: moving between connected locations and visiting the attraction at the current location.
 
