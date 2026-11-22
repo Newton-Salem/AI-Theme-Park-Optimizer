@@ -1,4 +1,3 @@
-
 """Connect BFS, DFS, UCS and IDS to visualization."""
 
 from src.environment.environment import (
@@ -14,6 +13,7 @@ from src.visualization.visualization import (
     draw_detailed_path,
     draw_action_timeline,
     draw_performance_comparison,
+    draw_explored_states,
     save_results_table
 )
 
@@ -114,9 +114,7 @@ def prepare_result(name, raw_result):
         states = [tuple(state) for state in path]
         actions = []
 
-        for previous, nxt in zip(
-            states, states[1:]
-        ):
+        for previous, nxt in zip(states, states[1:]):
             matches = [
                 action
                 for state, action, step_cost
@@ -142,9 +140,7 @@ def prepare_result(name, raw_result):
                     f"{name}: Incorrect path cost"
                 )
 
-        minutes = get_state_time_minutes(
-            states[-1]
-        )
+        minutes = get_state_time_minutes(states[-1])
 
         provided_minutes = raw_result.get(
             "estimated_trip_time_minutes"
@@ -168,7 +164,8 @@ def prepare_result(name, raw_result):
         "path": states,
         "actions": actions,
         "path_cost": cost,
-        "estimated_trip_time_minutes": minutes
+        "estimated_trip_time_minutes": minutes,
+        "explored": raw_result.get("explored")
     }
 
     for key in METRIC_KEYS:
@@ -186,9 +183,7 @@ def prepare_result(name, raw_result):
         normalized[key] = value
 
     if "depth_limit" in raw_result:
-        normalized["depth_limit"] = (
-            raw_result["depth_limit"]
-        )
+        normalized["depth_limit"] = raw_result["depth_limit"]
 
     return normalized
 
@@ -242,6 +237,12 @@ def process_algorithm_results(
 
             draw_action_timeline(
                 result["path"],
+                algorithm=name,
+                show=show
+            )
+
+            draw_explored_states(
+                result,
                 algorithm=name,
                 show=show
             )

@@ -583,7 +583,47 @@ def save_results_table(results):
     print(f"Saved: {filename}")
     return filename
 
+def draw_explored_states(result, algorithm="BFS", save=True, show=True):
+    """Park map: darker location = more states expanded there. Blue = final path."""
+    explored = result.get("explored")
+    if not explored:
+        print(f"{algorithm}: no 'explored' list returned, skipping explored plot")
+        return
 
+    graph = create_graph()
+    pos = get_positions()
+    counts = {loc: 0 for loc in LOCATIONS}
+    for state in explored:
+        counts[state[0]] += 1
+
+    fig, ax = plt.subplots(figsize=(16, 10))
+    nx.draw_networkx_edges(graph, pos, ax=ax, edge_color="#cbd5e1", width=1.5)
+    nodes = nx.draw_networkx_nodes(
+        graph, pos, ax=ax,
+        node_color=[counts[n] for n in graph.nodes()],
+        cmap=plt.cm.YlOrRd, node_size=2600,
+        edgecolors="black", linewidths=1.5
+    )
+    nx.draw_networkx_labels(
+        graph, pos, ax=ax,
+        labels={n: f"{n}\n({counts[n]})" for n in graph.nodes()},
+        font_size=8, font_weight="bold",
+        bbox={"facecolor": "white", "alpha": 0.7, "edgecolor": "none"}
+    )
+
+    path = result.get("path") or []
+    if path:
+        locs = [s[0] for s in path]
+        edges = [(a, b) for a, b in zip(locs, locs[1:]) if a != b]
+        nx.draw_networkx_edges(graph, pos, ax=ax, edgelist=edges,
+                               edge_color="#2563eb", width=4)
+
+    fig.colorbar(nodes, ax=ax, shrink=0.7,
+                 label="Number of expanded states at this location")
+    ax.set_title(f"{algorithm} - Explored States and Final Path (blue)",
+                 fontsize=18, fontweight="bold", pad=20)
+    ax.axis("off")
+    finish_plot(fig, f"{algorithm.lower()}_explored.png", save, show)
 if __name__ == "__main__":
     draw_park_map(show=False)
     print("Map ready.")

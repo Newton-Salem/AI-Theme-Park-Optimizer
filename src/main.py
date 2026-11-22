@@ -72,7 +72,7 @@ def main():
     if not results:
         print("No algorithm ran. Read the messages above.")
         return
-    process_algorithm_results(results, show=False)
+    process_algorithm_results(results, show=False, draw_map=False)
     try:
         print_metrics_comparison(list(results.values()))
     except (ValueError, TypeError, KeyError) as error:
